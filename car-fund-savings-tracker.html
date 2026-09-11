@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>New car fund</title>
+<style>
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    background:var(--page-bg);
+    background-attachment:fixed;
+    transition:background .7s ease;
+    overflow-x:hidden;
+    padding:44px 18px;
+  }
+  button{font-family:inherit;}
+
+  /* ---------- Theme tokens ---------- */
+  body[data-theme="aurora"]{
+    --page-bg:
+      radial-gradient(circle at 15% 20%, rgba(255,182,213,0.55), transparent 55%),
+      radial-gradient(circle at 85% 75%, rgba(182,242,223,0.5), transparent 55%),
+      linear-gradient(135deg,#f6ecff 0%, #e7f1ff 50%, #eafff6 100%);
+    --blob-a:#ffb6d5; --blob-b:#b7c6ff; --blob-c:#b6f2df; --blob-opacity:0.55;
+    --glass-bg:rgba(255,255,255,0.55);
+    --glass-border:rgba(255,255,255,0.9);
+    --glass-blur:22px;
+    --text-1:#1d1d1f; --text-2:#5b5b60;
+    --accent-solid:#8b5cf6; --accent-grad-a:#8a5cff; --accent-grad-b:#ff6fae;
+    --card-radius:20px; --unit-radius:50%; --unit-size:38px;
+    --unit-bg:rgba(0,0,0,0.045); --unit-border:rgba(0,0,0,0.13);
+  }
+  body[data-theme="midnight"]{
+    --page-bg:
+      radial-gradient(circle at 20% 20%, rgba(91,61,240,0.35), transparent 55%),
+      radial-gradient(circle at 80% 80%, rgba(31,182,255,0.28), transparent 55%),
+      linear-gradient(160deg,#07070d 0%, #12132a 60%, #0a0a12 100%);
+    --blob-a:#5b3df0; --blob-b:#1fb6ff; --blob-c:#ff4fd8; --blob-opacity:0.5;
+    --glass-bg:rgba(255,255,255,0.06);
+    --glass-border:rgba(255,255,255,0.14);
+    --glass-blur:20px;
+    --text-1:#f5f5f7; --text-2:#a1a1a6;
+    --accent-solid:#34e0ff; --accent-grad-a:#34e0ff; --accent-grad-b:#7b5bff;
+    --card-radius:16px; --unit-radius:10px; --unit-size:36px;
+    --unit-bg:rgba(255,255,255,0.05); --unit-border:rgba(255,255,255,0.16);
+  }
+  body[data-theme="vision"]{
+    --page-bg:
+      radial-gradient(circle at 15% 25%, rgba(255,77,141,0.35), transparent 55%),
+      radial-gradient(circle at 85% 15%, rgba(255,184,77,0.3), transparent 55%),
+      radial-gradient(circle at 50% 90%, rgba(77,219,168,0.32), transparent 55%),
+      linear-gradient(180deg,#0d0d12,#08080c);
+    --blob-a:#ff4d8d; --blob-b:#ffb84d; --blob-c:#4ddba8; --blob-opacity:0.5;
+    --glass-bg:rgba(255,255,255,0.08);
+    --glass-border:rgba(255,255,255,0.22);
+    --glass-blur:30px;
+    --text-1:#ffffff; --text-2:#d7d7e0;
+    --accent-solid:#ff8a4d; --accent-grad-a:#ff4d8d; --accent-grad-b:#4ddba8;
+    --card-radius:26px; --unit-radius:999px; --unit-size:34px;
+    --unit-bg:rgba(255,255,255,0.08); --unit-border:rgba(255,255,255,0.25);
+  }
+  body[data-theme="frost"]{
+    --page-bg:linear-gradient(160deg,#eef1f5 0%, #dfe4ea 100%);
+    --blob-a:#cfd8e3; --blob-b:#e7ecf1; --blob-c:#d7e0ea; --blob-opacity:0.35;
+    --glass-bg:rgba(255,255,255,0.7);
+    --glass-border:rgba(0,0,0,0.07);
+    --glass-blur:14px;
+    --text-1:#1d1d1f; --text-2:#6e6e73;
+    --accent-solid:#0a84ff; --accent-grad-a:#0a84ff; --accent-grad-b:#34c759;
+    --card-radius:12px; --unit-radius:6px; --unit-size:34px;
+    --unit-bg:rgba(0,0,0,0.035); --unit-border:rgba(0,0,0,0.1);
+  }
+  body[data-theme="vision"] .unit{ width:auto; min-width:46px; height:30px; padding:0 6px; }
+
+  /* ---------- Ambient background ---------- */
+  .blob{position:fixed;border-radius:50%;filter:blur(80px);opacity:var(--blob-opacity,0.5);z-index:0;pointer-events:none;animation:float 22s ease-in-out infinite;transition:background .7s ease,opacity .7s ease;}
+  .blob1{width:420px;height:420px;background:var(--blob-a);top:-120px;left:-110px;}
+  .blob2{width:380px;height:380px;background:var(--blob-b);bottom:-140px;right:-90px;animation-delay:-7s;}
+  .blob3{width:320px;height:320px;background:var(--blob-c);top:45%;left:65%;animation-delay:-14s;}
+  @keyframes float{0%,100%{transform:translate(0,0);}50%{transform:translate(26px,-22px);}}
+
+  @media (prefers-reduced-motion: reduce){
+    .blob{animation:none;}
+    .mac-window{animation:none;}
+    *{transition:none !important;}
+  }
+
+  /* ---------- Window chrome ---------- */
+  .mac-window{
+    position:relative;z-index:1;max-width:1100px;margin:0 auto;border-radius:20px;overflow:hidden;
+    box-shadow:0 30px 80px rgba(0,0,0,0.35), 0 2px 0 rgba(255,255,255,0.06) inset;
+    animation:appear .5s ease;
+  }
+  @keyframes appear{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+  .title-bar{
+    height:46px;display:flex;align-items:center;padding:0 16px;
+    background:rgba(22,22,26,0.55);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    border-bottom:1px solid rgba(255,255,255,0.08);
+  }
+  .traffic{display:flex;gap:8px;width:52px;flex-shrink:0;}
+  .dot{width:12px;height:12px;border-radius:50%;display:inline-block;}
+  .dot.red{background:#ff5f57;} .dot.yellow{background:#febc2e;} .dot.green{background:#28c840;}
+  .window-title{flex:1;text-align:center;color:rgba(255,255,255,0.82);font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 8px;}
+  .title-spacer{width:52px;flex-shrink:0;}
+
+  .tab-bar{
+    padding:10px 16px;background:rgba(22,22,26,0.4);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:center;
+  }
+  .tabs{display:inline-flex;background:rgba(255,255,255,0.08);padding:4px;border-radius:12px;gap:2px;flex-wrap:wrap;justify-content:center;}
+  .tab{
+    border:none;background:transparent;color:rgba(255,255,255,0.62);font-size:13px;font-weight:500;
+    padding:7px 14px;border-radius:9px;cursor:pointer;display:flex;align-items:center;gap:7px;
+    transition:background .2s ease,color .2s ease;
+  }
+  .tab .swatch{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .tab.active{background:rgba(255,255,255,0.18);color:#fff;}
+  .tab:hover:not(.active){color:rgba(255,255,255,0.88);}
+
+  .tab:focus-visible,.unit:focus-visible,.reset-btn:focus-visible,.edit-btn:focus-visible,.edit-save:focus-visible,.edit-cancel:focus-visible{
+    outline:2px solid var(--accent-solid);outline-offset:2px;
+  }
+
+  /* ---------- Content ---------- */
+  .content{padding:36px clamp(18px,4vw,48px) 44px;background:var(--page-bg);background-attachment:fixed;transition:background .7s ease;}
+
+  .header{margin-bottom:26px;}
+  .goal-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .goal-row h1{font-size:clamp(22px,4vw,32px);color:var(--text-1);margin:0;font-weight:700;transition:color .4s ease;}
+  .edit-btn{
+    background:rgba(255,255,255,0.14);border:1px solid var(--glass-border);color:var(--text-2);
+    font-size:12px;padding:6px 13px;border-radius:9px;cursor:pointer;transition:all .2s ease;
+  }
+  .edit-btn:hover{color:var(--text-1);}
+  .tagline{color:var(--text-2);font-size:14.5px;margin:10px 0 0;max-width:52ch;line-height:1.5;transition:color .4s ease;}
+
+  .edit-panel{margin-top:16px;padding:18px;border-radius:16px;display:flex;flex-direction:column;gap:14px;max-width:420px;}
+  .edit-panel[hidden]{display:none;}
+  .edit-field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--text-2);}
+  .edit-field input{
+    font:inherit;font-size:15px;padding:9px 12px;border-radius:9px;border:1px solid var(--glass-border);
+    background:rgba(255,255,255,0.6);color:var(--text-1);
+  }
+  body[data-theme="midnight"] .edit-field input, body[data-theme="vision"] .edit-field input{background:rgba(255,255,255,0.09);}
+  .edit-actions{display:flex;gap:10px;}
+  .edit-save{background:var(--accent-solid);color:#fff;border:none;padding:9px 16px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;}
+  .edit-cancel{background:transparent;border:1px solid var(--glass-border);color:var(--text-2);padding:9px 16px;border-radius:9px;font-size:13px;cursor:pointer;}
+  .edit-warning{font-size:11.5px;color:var(--text-2);margin:0;}
+
+  .glass{
+    background:var(--glass-bg);border:1px solid var(--glass-border);
+    backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));
+    box-shadow:0 8px 30px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.12);
+  }
+
+  /* ---------- Summary hero (4 variants) ---------- */
+  .summary{margin:24px 0 4px;}
+  .summary-variant{display:none;}
+
+  .ring-variant{align-items:center;gap:30px;flex-wrap:wrap;}
+  .ring{
+    width:150px;height:150px;border-radius:50%;flex-shrink:0;
+    background:conic-gradient(var(--accent-solid) 0% calc(var(--pct,0)*1%), rgba(0,0,0,0.12) calc(var(--pct,0)*1%) 100%);
+    display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,0.12);
+    transition:background .5s ease;
+  }
+  .ring-inner{width:76%;height:76%;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .ring-pct{font-size:26px;font-weight:700;color:var(--text-1);font-variant-numeric:tabular-nums;}
+  .ring-label{font-size:12px;color:var(--text-2);}
+  .ring-stats{display:flex;flex-direction:column;gap:12px;}
+  .ring-stats div{display:flex;flex-direction:column;}
+  .ring-stats strong{font-size:20px;color:var(--text-1);font-variant-numeric:tabular-nums;}
+  .ring-stats span{font-size:12.5px;color:var(--text-2);}
+
+  .bar-variant{flex-direction:column;gap:18px;}
+  .bar-track{height:14px;border-radius:999px;background:rgba(255,255,255,0.08);overflow:hidden;}
+  .bar-fill{height:100%;width:calc(var(--pct,0)*1%);background:linear-gradient(90deg,var(--accent-grad-a),var(--accent-grad-b));border-radius:999px;transition:width .5s ease;box-shadow:0 0 16px var(--accent-solid);}
+  .stat-chips{display:flex;gap:12px;flex-wrap:wrap;}
+  .chip{flex:1;min-width:120px;padding:14px;border-radius:14px;text-align:center;}
+  .chip span{display:block;font-size:19px;font-weight:700;color:var(--text-1);font-variant-numeric:tabular-nums;}
+  .chip label{font-size:11px;color:var(--text-2);}
+
+  .orb-variant{align-items:center;gap:26px;flex-wrap:wrap;}
+  .orb{
+    width:138px;height:138px;border-radius:50%;flex-shrink:0;
+    background:conic-gradient(var(--accent-grad-a) 0% calc(var(--pct,0)*1%), rgba(255,255,255,0.14) calc(var(--pct,0)*1%) 100%);
+    display:flex;align-items:center;justify-content:center;box-shadow:0 20px 50px rgba(0,0,0,0.4);
+    transition:background .5s ease;
+  }
+  .orb span{width:74%;height:74%;border-radius:50%;background:rgba(10,10,16,0.75);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums;}
+  .capsules{display:flex;flex-direction:column;gap:10px;}
+  .capsule{padding:10px 18px;border-radius:999px;font-size:13px;color:var(--text-1);}
+  .capsule span{font-weight:700;margin-right:5px;font-variant-numeric:tabular-nums;}
+
+  .minimal-variant{flex-direction:column;gap:10px;}
+  .minimal-row{font-size:20px;font-weight:600;color:var(--text-1);}
+  .minimal-row span{font-weight:700;font-variant-numeric:tabular-nums;}
+  .minimal-row .of{font-weight:400;color:var(--text-2);margin:0 5px;font-size:14px;}
+  .thin-bar{height:6px;border-radius:999px;background:rgba(0,0,0,0.08);overflow:hidden;}
+  .thin-fill{height:100%;width:calc(var(--pct,0)*1%);background:linear-gradient(90deg,var(--accent-grad-a),var(--accent-grad-b));transition:width .5s ease;}
+  .minimal-sub{font-size:12.5px;color:var(--text-2);}
+  .minimal-remain{font-size:13px;color:var(--text-1);}
+  .minimal-remain span{font-weight:700;font-variant-numeric:tabular-nums;}
+
+  body[data-theme="aurora"] .ring-variant{display:flex;}
+  body[data-theme="midnight"] .bar-variant{display:flex;}
+  body[data-theme="vision"] .orb-variant{display:flex;}
+  body[data-theme="frost"] .minimal-variant{display:flex;}
+
+  .motivation{margin-top:16px;font-size:14px;font-weight:600;color:var(--text-1);transition:color .4s ease;}
+
+  /* ---------- Milestone grid ---------- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;margin-top:28px;}
+  .card{border-radius:var(--card-radius);padding:16px;border:1px solid transparent;transition:background .5s ease,border-color .3s ease,box-shadow .3s ease;}
+  .card.complete{border-color:var(--accent-solid);box-shadow:0 0 0 2px var(--accent-solid) inset, 0 8px 30px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.12);}
+  .card-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;gap:8px;}
+  .card-title{font-weight:700;color:var(--text-1);font-size:16px;}
+  .card-count{font-size:12px;color:var(--text-2);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .units{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;justify-items:center;}
+  .unit{
+    width:var(--unit-size);height:var(--unit-size);border-radius:var(--unit-radius);
+    border:1.5px solid var(--unit-border);background:var(--unit-bg);color:var(--text-1);
+    font-size:9px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    transition:transform .15s ease,background .3s ease,border-color .3s ease,color .2s ease;
+  }
+  .unit:hover{transform:translateY(-2px) scale(1.06);}
+  .unit.saved{
+    background:linear-gradient(135deg,var(--accent-grad-a),var(--accent-grad-b));
+    color:#fff;border-color:transparent;box-shadow:0 4px 14px rgba(0,0,0,0.25);font-size:14px;
+  }
+
+  /* ---------- Footer ---------- */
+  .footer{display:flex;justify-content:space-between;align-items:center;margin-top:32px;flex-wrap:wrap;gap:12px;}
+  .reset-btn{background:rgba(255,255,255,0.1);border:1px solid var(--glass-border);color:var(--text-2);font-size:12px;padding:8px 14px;border-radius:10px;cursor:pointer;transition:all .2s ease;}
+  .reset-btn:hover{color:var(--text-1);}
+  .reset-btn.armed{background:rgba(255,80,80,0.15);border-color:rgba(255,80,80,0.4);color:#ff6b6b;}
+  .sync{font-size:11px;color:var(--text-2);opacity:.75;}
+
+  @media (max-width:640px){
+    body{padding:0;}
+    .mac-window{border-radius:0;margin:0;}
+    .grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+    .ring,.orb{width:112px;height:112px;}
+    .ring-pct,.orb span{font-size:18px;}
+    .tab{padding:6px 10px;font-size:12px;}
+    .content{padding:26px 16px 36px;}
+  }
+</style>
+</head>
+<body data-theme="aurora">
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
+
+  <div class="mac-window">
+    <div class="title-bar">
+      <div class="traffic">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+      </div>
+      <div class="window-title" id="windowTitleText">New car fund</div>
+      <div class="title-spacer"></div>
+    </div>
+
+    <div class="tab-bar">
+      <div class="tabs" role="group" aria-label="Choose an appearance">
+        <button class="tab active" data-theme="aurora" aria-pressed="true"><span class="swatch" style="background:#8b5cf6"></span>Aurora</button>
+        <button class="tab" data-theme="midnight" aria-pressed="false"><span class="swatch" style="background:#34e0ff"></span>Midnight</button>
+        <button class="tab" data-theme="vision" aria-pressed="false"><span class="swatch" style="background:#ff8a4d"></span>Vision</button>
+        <button class="tab" data-theme="frost" aria-pressed="false"><span class="swatch" style="background:#0a84ff"></span>Frost</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="header">
+        <div class="goal-row">
+          <h1 id="goalTitle">New car fund</h1>
+          <button class="edit-btn" id="editBtn" type="button">Edit</button>
+        </div>
+        <p class="tagline" id="tagline">Save $20,000, $100 at a time.</p>
+
+        <div class="edit-panel glass" id="editPanel" hidden>
+          <label class="edit-field">
+            <span>What are you saving for?</span>
+            <input type="text" id="titleInput" maxlength="60" placeholder="New car fund">
+          </label>
+          <label class="edit-field">
+            <span>Goal amount ($100&ndash;$500,000)</span>
+            <input type="number" id="goalInput" min="100" max="500000" step="1" placeholder="20000">
+          </label>
+          <div class="edit-actions">
+            <button class="edit-save" id="saveGoalBtn" type="button">Save changes</button>
+            <button class="edit-cancel" id="cancelGoalBtn" type="button">Cancel</button>
+          </div>
+          <p class="edit-warning">Changing the amount rebuilds your squares and resets progress.</p>
+        </div>
+      </div>
+
+      <div class="summary">
+        <div class="summary-variant ring-variant">
+          <div class="ring">
+            <div class="ring-inner glass">
+              <div class="ring-pct" id="pctRing">0%</div>
+              <div class="ring-label">saved</div>
+            </div>
+          </div>
+          <div class="ring-stats">
+            <div><strong id="savedAmtRing">$0</strong><span>Saved so far</span></div>
+            <div><strong id="remainAmtRing">$20,000</strong><span>Still fighting for</span></div>
+          </div>
+        </div>
+
+        <div class="summary-variant bar-variant">
+          <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+          <div class="stat-chips">
+            <div class="chip glass"><span id="savedAmtBar">$0</span><label>Saved</label></div>
+            <div class="chip glass"><span id="pctBar">0%</span><label>Complete</label></div>
+            <div class="chip glass"><span id="remainAmtBar">$20,000</span><label>Still fighting for</label></div>
+          </div>
+        </div>
+
+        <div class="summary-variant orb-variant">
+          <div class="orb"><span id="pctOrb">0%</span></div>
+          <div class="capsules">
+            <div class="capsule glass"><span id="savedAmtOrb">$0</span>saved so far</div>
+            <div class="capsule glass"><span id="remainAmtOrb">$20,000</span>still in the fight</div>
+          </div>
+        </div>
+
+        <div class="summary-variant minimal-variant">
+          <div class="minimal-row"><span id="savedAmtMin">$0</span><span class="of">of</span><span id="goalAmtMin">$20,000</span> saved</div>
+          <div class="thin-bar"><div class="thin-fill" id="thinFill"></div></div>
+          <div class="minimal-sub" id="pctMin">0% complete</div>
+          <div class="minimal-remain"><span id="remainAmtMin">$20,000</span> still in the fight</div>
+        </div>
+      </div>
+
+      <div class="motivation" id="motivation">Tap a square each time you set aside $100.</div>
+
+      <div class="grid" id="grid"></div>
+
+      <div class="footer">
+        <button class="reset-btn" id="resetBtn" type="button">Reset progress</button>
+        <div class="sync" id="syncStatus">Progress saves automatically</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  var MIN_GOAL = 100;
+  var MAX_GOAL = 500000;
+  var THEMES = ['aurora','midnight','vision','frost'];
+  var STORAGE_KEY = 'car-fund-state-v1';
+
+  var GOAL, UNIT_VALUE, TOTAL_UNITS, SECTIONS;
+
+  var state = {
+    title: 'New car fund',
+    goal: 20000,
+    theme: 'aurora',
+    saved: []
+  };
+
+  var grid = document.getElementById('grid');
+  var resetBtn = document.getElementById('resetBtn');
+  var syncStatus = document.getElementById('syncStatus');
+  var motivationEl = document.getElementById('motivation');
+  var editBtn = document.getElementById('editBtn');
+  var editPanel = document.getElementById('editPanel');
+  var titleInput = document.getElementById('titleInput');
+  var goalInput = document.getElementById('goalInput');
+  var saveGoalBtn = document.getElementById('saveGoalBtn');
+  var cancelGoalBtn = document.getElementById('cancelGoalBtn');
+
+  var unitButtons = [];
+  var cardEls = [];
+  var countEls = [];
+
+  function formatCurrency(n){
+    return '$' + Math.round(n).toLocaleString('en-US');
+  }
+
+  function pickUnitValue(goal){
+    if(goal <= 500) return 25;
+    if(goal <= 3000) return 50;
+    if(goal <= 20000) return 100;
+    if(goal <= 50000) return 200;
+    if(goal <= 150000) return 500;
+    return 1000;
+  }
+
+  function clampGoal(g){
+    g = Number(g);
+    if(!isFinite(g)) g = 20000;
+    if(g < MIN_GOAL) g = MIN_GOAL;
+    if(g > MAX_GOAL) g = MAX_GOAL;
+    return g;
+  }
+
+  function applyGoalConfig(requestedGoal, resetProgress){
+    var clamped = clampGoal(requestedGoal);
+    UNIT_VALUE = pickUnitValue(clamped);
+    TOTAL_UNITS = Math.ceil(clamped / UNIT_VALUE);
+    GOAL = TOTAL_UNITS * UNIT_VALUE;
+    SECTIONS = Math.ceil(TOTAL_UNITS / 10);
+    state.goal = GOAL;
+    if(resetProgress || !Array.isArray(state.saved) || state.saved.length !== TOTAL_UNITS){
+      state.saved = new Array(TOTAL_UNITS).fill(false);
+    }
+  }
+
+  function buildGrid(){
+    grid.innerHTML = '';
+    unitButtons = new Array(TOTAL_UNITS);
+    cardEls = new Array(SECTIONS);
+    countEls = new Array(SECTIONS);
+
+    var frag = document.createDocumentFragment();
+    var idx = 0;
+
+    for(var s=0; s<SECTIONS; s++){
+      var unitsHere = Math.min(10, TOTAL_UNITS - idx);
+
+      var card = document.createElement('div');
+      card.className = 'card glass';
+
+      var head = document.createElement('div');
+      head.className = 'card-head';
+
+      var title = document.createElement('div');
+      title.className = 'card-title';
+      title.textContent = formatCurrency(unitsHere * UNIT_VALUE);
+
+      var count = document.createElement('div');
+      count.className = 'card-count';
+      count.textContent = '0 of ' + unitsHere + ' saved';
+
+      head.appendChild(title);
+      head.appendChild(count);
+
+      var units = document.createElement('div');
+      units.className = 'units';
+
+      for(var u=0; u<unitsHere; u++){
+        (function(i){
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'unit';
+          btn.dataset.index = String(i);
+          btn.setAttribute('aria-pressed','false');
+          btn.setAttribute('aria-label', formatCurrency(UNIT_VALUE));
+          btn.textContent = String(UNIT_VALUE);
+          units.appendChild(btn);
+          unitButtons[i] = btn;
+        })(idx);
+        idx++;
+      }
+
+      card.appendChild(head);
+      card.appendChild(units);
+      frag.appendChild(card);
+
+      cardEls[s] = card;
+      countEls[s] = count;
+    }
+    grid.appendChild(frag);
+  }
+
+  function renderUnit(idx){
+    var btn = unitButtons[idx];
+    if(!btn) return;
+    var saved = state.saved[idx];
+    btn.classList.toggle('saved', saved);
+    btn.setAttribute('aria-pressed', saved ? 'true' : 'false');
+    btn.textContent = saved ? '\u2713' : String(UNIT_VALUE);
+  }
+
+  function renderCard(section){
+    var start = section * 10;
+    var unitsHere = Math.min(10, TOTAL_UNITS - start);
+    var count = 0;
+    for(var u=0; u<unitsHere; u++){
+      if(state.saved[start+u]) count++;
+    }
+    var countEl = countEls[section];
+    if(countEl) countEl.textContent = count + ' of ' + unitsHere + ' saved';
+    var card = cardEls[section];
+    if(card) card.classList.toggle('complete', count === unitsHere);
+  }
+
+  function totalSaved(){
+    var c = 0;
+    for(var i=0; i<TOTAL_UNITS; i++){ if(state.saved[i]) c++; }
+    return c * UNIT_VALUE;
+  }
+
+  function getMotivation(pct){
+    if(pct >= 100) return "You didn't quit. Go get it.";
+    if(pct >= 75) return "So close. Don't give up now.";
+    if(pct >= 50) return "Halfway there. Keep fighting.";
+    if(pct >= 25) return "Momentum's building. Don't stop now.";
+    if(pct > 0) return "Great start. Keep going.";
+    return "Tap a square each time you set aside " + formatCurrency(UNIT_VALUE) + ".";
+  }
+
+  function setText(id, text){
+    var el = document.getElementById(id);
+    if(el) el.textContent = text;
+  }
+
+  function updateHeaderTexts(){
+    setText('goalTitle', state.title);
+    setText('windowTitleText', state.title);
+    document.title = state.title;
+    setText('tagline', 'Save ' + formatCurrency(GOAL) + ', ' + formatCurrency(UNIT_VALUE) + ' at a time.');
+  }
+
+  function updateSummary(){
+    var saved = totalSaved();
+    var remaining = GOAL - saved;
+    var pct = Math.round((saved / GOAL) * 100);
+
+    document.body.style.setProperty('--pct', pct);
+
+    setText('pctRing', pct + '%');
+    setText('savedAmtRing', formatCurrency(saved));
+    setText('remainAmtRing', formatCurrency(remaining));
+
+    setText('savedAmtBar', formatCurrency(saved));
+    setText('pctBar', pct + '%');
+    setText('remainAmtBar', formatCurrency(remaining));
+
+    setText('pctOrb', pct + '%');
+    setText('savedAmtOrb', formatCurrency(saved));
+    setText('remainAmtOrb', formatCurrency(remaining));
+
+    setText('savedAmtMin', formatCurrency(saved));
+    setText('goalAmtMin', formatCurrency(GOAL));
+    setText('pctMin', pct + '% complete');
+    setText('remainAmtMin', formatCurrency(remaining));
+
+    if(motivationEl) motivationEl.textContent = getMotivation(pct);
+  }
+
+  function renderAll(){
+    for(var i=0; i<TOTAL_UNITS; i++) renderUnit(i);
+    for(var s=0; s<SECTIONS; s++) renderCard(s);
+    updateSummary();
+  }
+
+  function setTheme(theme, persist){
+    if(THEMES.indexOf(theme) === -1) return;
+    state.theme = theme;
+    document.body.dataset.theme = theme;
+    var tabs = document.querySelectorAll('.tab');
+    for(var i=0; i<tabs.length; i++){
+      var active = tabs[i].dataset.theme === theme;
+      tabs[i].classList.toggle('active', active);
+      tabs[i].setAttribute('aria-pressed', active ? 'true' : 'false');
+    }
+    if(persist !== false) scheduleSave();
+  }
+
+  function hasCloudStorage(){
+    return typeof window.storage !== 'undefined' && window.storage && typeof window.storage.get === 'function';
+  }
+
+  function applyLoadedPayload(raw){
+    try{
+      var parsed = JSON.parse(raw);
+      if(typeof parsed.title === 'string' && parsed.title.trim()) state.title = parsed.title.trim().slice(0,60);
+      if(typeof parsed.goal === 'number' && isFinite(parsed.goal)) state.goal = parsed.goal;
+      if(typeof parsed.theme === 'string' && THEMES.indexOf(parsed.theme) !== -1) state.theme = parsed.theme;
+      if(Array.isArray(parsed.saved)) state.saved = parsed.saved.map(Boolean);
+    } catch(err){
+      /* corrupt data - ignore and start fresh */
+    }
+  }
+
+  function loadState(){
+    if(hasCloudStorage()){
+      return window.storage.get(STORAGE_KEY).then(function(res){
+        if(res && res.value) applyLoadedPayload(res.value);
+      }).catch(function(){
+        /* no saved progress yet, or storage unavailable */
+      });
+    }
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(raw) applyLoadedPayload(raw);
+    } catch(err){
+      /* private browsing or storage disabled */
+    }
+    return Promise.resolve();
+  }
+
+  var saveTimer = null;
+  function scheduleSave(){
+    if(saveTimer) clearTimeout(saveTimer);
+    setSyncStatus('Saving\u2026');
+    saveTimer = setTimeout(saveState, 450);
+  }
+
+  function setSyncStatus(text){
+    if(syncStatus) syncStatus.textContent = text;
+  }
+
+  function saveState(){
+    var payload = JSON.stringify({ saved: state.saved, theme: state.theme, goal: state.goal, title: state.title });
+    if(hasCloudStorage()){
+      try{
+        window.storage.set(STORAGE_KEY, payload).then(function(res){
+          setSyncStatus(res ? 'Progress saved' : 'Could not save progress');
+        }).catch(function(err){
+          console.error('Save failed', err);
+          setSyncStatus('Could not save progress');
+        });
+      } catch(err){
+        console.error('Save failed', err);
+        setSyncStatus('Could not save progress');
+      }
+    } else {
+      try{
+        localStorage.setItem(STORAGE_KEY, payload);
+        setSyncStatus('Saved on this device');
+      } catch(err){
+        console.error('Save failed', err);
+        setSyncStatus('Could not save progress');
+      }
+    }
+  }
+
+  grid.addEventListener('click', function(e){
+    var btn = e.target.closest('.unit');
+    if(!btn) return;
+    var idx = Number(btn.dataset.index);
+    state.saved[idx] = !state.saved[idx];
+    renderUnit(idx);
+    renderCard(Math.floor(idx / 10));
+    updateSummary();
+    scheduleSave();
+  });
+
+  document.querySelector('.tabs').addEventListener('click', function(e){
+    var btn = e.target.closest('.tab');
+    if(!btn) return;
+    setTheme(btn.dataset.theme);
+  });
+
+  var resetArmed = false;
+  var resetTimer = null;
+  resetBtn.addEventListener('click', function(){
+    if(!resetArmed){
+      resetArmed = true;
+      resetBtn.textContent = 'Click again to confirm';
+      resetBtn.classList.add('armed');
+      resetTimer = setTimeout(function(){
+        resetArmed = false;
+        resetBtn.textContent = 'Reset progress';
+        resetBtn.classList.remove('armed');
+      }, 3000);
+      return;
+    }
+    clearTimeout(resetTimer);
+    state.saved = new Array(TOTAL_UNITS).fill(false);
+    renderAll();
+    scheduleSave();
+    resetArmed = false;
+    resetBtn.textContent = 'Reset progress';
+    resetBtn.classList.remove('armed');
+  });
+
+  editBtn.addEventListener('click', function(){
+    if(editPanel.hidden){
+      titleInput.value = state.title;
+      goalInput.value = state.goal;
+      editPanel.hidden = false;
+      titleInput.focus();
+    } else {
+      editPanel.hidden = true;
+    }
+  });
+
+  cancelGoalBtn.addEventListener('click', function(){
+    editPanel.hidden = true;
+  });
+
+  function commitGoalEdit(){
+    var newTitle = titleInput.value.trim().slice(0,60) || 'Savings goal';
+    var newGoal = clampGoal(parseFloat(goalInput.value));
+    state.title = newTitle;
+    applyGoalConfig(newGoal, true);
+    buildGrid();
+    updateHeaderTexts();
+    renderAll();
+    scheduleSave();
+    editPanel.hidden = true;
+  }
+
+  saveGoalBtn.addEventListener('click', commitGoalEdit);
+
+  function handleEnterKey(e){
+    if(e.key === 'Enter') commitGoalEdit();
+  }
+  titleInput.addEventListener('keydown', handleEnterKey);
+  goalInput.addEventListener('keydown', handleEnterKey);
+
+  function init(){
+    loadState().then(function(){
+      applyGoalConfig(state.goal, false);
+      buildGrid();
+      setTheme(state.theme, false);
+      updateHeaderTexts();
+      renderAll();
+      setSyncStatus('Progress saves automatically');
+    });
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
